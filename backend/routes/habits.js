@@ -7,10 +7,36 @@ const router = express.Router();
 // Create a habit
 router.post('/', protect, async (req, res) => {
   try {
-    const { title } = req.body;
-    const habit = new Habit({ user: req.userId, title });
+    const { title, category } = req.body;
+    const habit = new Habit({ user: req.userId, title, category: category || 'Coding' });
     await habit.save();
     res.status(201).json(habit);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Edit a habit's title/category
+router.patch('/:id', protect, async (req, res) => {
+  try {
+    const habit = await Habit.findOne({ _id: req.params.id, user: req.userId });
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+
+    if (req.body.title) habit.title = req.body.title;
+    if (req.body.category) habit.category = req.body.category;
+
+    await habit.save();
+    res.json(habit);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+// Get a single habit by ID
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const habit = await Habit.findOne({ _id: req.params.id, user: req.userId });
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+    res.json(habit);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

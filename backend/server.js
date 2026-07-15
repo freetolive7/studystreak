@@ -8,7 +8,14 @@ const habitRoutes = require('./routes/habits');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    process.env.FRONTEND_URL,
+  ],
+  credentials: true,
+}));
 app.use(express.json());          
 
 

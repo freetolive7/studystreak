@@ -1,5 +1,6 @@
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Flame, Trash2, LogOut, Plus, Check } from 'lucide-react';
 import API from '../api/axios';
 
@@ -64,6 +65,23 @@ function Dashboard() {
 
   const today = new Date().toISOString().split('T')[0];
 
+  const getWeeklyData = () => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+
+      const count = habits.reduce((total, habit) => {
+        return total + (habit.completedDates?.includes(dateStr) ? 1 : 0);
+      }, 0);
+
+      days.push({ day: label, completed: count });
+    }
+    return days;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 px-4 py-10">
       <div className="max-w-2xl mx-auto">
@@ -97,6 +115,23 @@ function Dashboard() {
           </button>
         </form>
 
+        {habits.length > 0 && (
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 mb-6">
+            <h2 className="text-white font-medium mb-4">This Week</h2>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={getWeeklyData()}>
+                <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} />
+                <YAxis allowDecimals={false} stroke="#94a3b8" fontSize={12} />
+                <Tooltip
+                  contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+                  labelStyle={{ color: '#fff' }}
+                />
+                <Bar dataKey="completed" fill="#6366f1" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
         {error && (
           <p className="text-red-400 text-sm bg-red-950/40 border border-red-900 rounded-lg px-3 py-2 mb-4">
             {error}
@@ -116,12 +151,14 @@ function Dashboard() {
                   key={habit._id}
                   className="flex items-center justify-between bg-slate-800/60 border border-slate-700 rounded-xl px-5 py-4"
                 >
-                  <div>
-                    <p className="text-white font-medium">{habit.title}</p>
+                  <Link to={`/habits/${habit._id}`} className="group">
+                    <p className="text-white font-medium group-hover:text-indigo-400 transition-colors">
+                      {habit.title}
+                    </p>
                     <p className="flex items-center gap-1 text-orange-400 text-sm mt-1">
                       <Flame size={16} /> {habit.streak} day streak
                     </p>
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleComplete(habit._id)}

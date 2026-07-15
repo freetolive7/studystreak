@@ -10,12 +10,17 @@ const habitSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    enum: ['Coding', 'Competitive Programming', 'GitHub', 'Projects'],
+    default: 'Coding',
+  },
   streak: {
     type: Number,
     default: 0,
   },
   completedDates: {
-    type: [String], // stores dates like "2026-07-14"
+    type: [String],
     default: [],
   },
   lastCompletedDate: {
